@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import datetime
 import json
 import logging
@@ -135,12 +136,18 @@ def download_consumptions_for_meter(
             )
             continue
 
-        json_file.write_text(
-            json.dumps(
-                smartmeter.get_consumption_records_for_day(energy_meter, day),
-                indent=4,
-            )
+        consumption_records = smartmeter.get_consumption_records_for_day(
+            energy_meter, day
         )
+        if not consumption_records["meteredValues"]:
+            _logger.error(
+                "Consumption records for '%s' and '%s' missing data.",
+                energy_meter,
+                day.isoformat(),
+            )
+            continue
+
+        json_file.write_text(json.dumps(consumption_records, indent=4))
 
 
 def main():

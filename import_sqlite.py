@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import datetime
 import json
 import sqlite3
@@ -43,6 +44,8 @@ def _check_database(con):
 def import_data():
     for account_path in _settings.storage_path.iterdir():
         # account_id = account_path.name
+        if not account_path.is_dir():
+            continue
 
         for energy_meter_path in account_path.iterdir():
             # energy_meter = energy_meter_path.name
