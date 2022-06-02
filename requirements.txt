@@ -1,6 +1,6 @@
-pydantic[dotenv]==1.9.0
+pydantic[dotenv]==1.9.1
 requests==2.27.1
 
 # development
 black==22.3.0
-ipython==8.2.0
+ipython==8.4.0
