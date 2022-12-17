@@ -31,6 +31,8 @@ VALUES
 ON CONFLICT(timestamp) DO NOTHING
 """
 
+IGNORED_PATH = [".DS_Store"]
+
 
 def _check_database(con):
     try:
@@ -48,7 +50,8 @@ def import_data():
             continue
 
         for energy_meter_path in account_path.iterdir():
-            # energy_meter = energy_meter_path.name
+            if energy_meter_path.name in IGNORED_PATH:
+                continue
 
             db_file = energy_meter_path / DB_FILENAME
             con = sqlite3.connect(str(db_file))
