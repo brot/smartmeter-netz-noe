@@ -21,11 +21,17 @@ class SmartMeter:
         self.session.headers.update({"User-Agent": _settings.user_agent})
 
         self._login(username, password)
+        self._extend_session_lifetime()
 
     def _login(self, username: str, password: str) -> None:
         """Log into the smartmeter portal from Netz NÖ."""
         url = f"{BASE_URL}/Authentication/Login"
         response = self.session.post(url, json={"user": username, "pwd": password})
+        response.raise_for_status()
+
+    def _extend_session_lifetime(self) -> None:
+        url = f"{BASE_URL}/Authentication/ExtendSessionLifetime"
+        response = self.session.get(url)
         response.raise_for_status()
 
     def _get_account_ids(self) -> list[str]:
@@ -36,7 +42,7 @@ class SmartMeter:
         """
         url = f"{BASE_URL}/User/GetAccountIdByBussinespartnerId"
 
-        response = self.session.get(url)
+        response = self.session.get(url, params={"context": 2})
         response.raise_for_status()
         _logger.debug("Response for '%s' was: %s", url, json.dumps(response.json()))
 
@@ -51,7 +57,7 @@ class SmartMeter:
         """
         url = f"{BASE_URL}/User/GetMeteringPointByAccountId"
 
-        response = self.session.get(url, params={"accountId": account_id})
+        response = self.session.get(url, params={"accountId": account_id, "context": 2})
         response.raise_for_status()
         _logger.debug("Response for '%s' was: %s", url, json.dumps(response.json()))
 
