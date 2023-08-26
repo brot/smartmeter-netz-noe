@@ -1,7 +1,0 @@
-pydantic==2.3.0
-pydantic_settings==2.0.3
-requests==2.31.0
-
-# development
-black==23.7.0
-ipython==8.14.0
