@@ -3,5 +3,5 @@ pydantic_settings
 requests
 
 # development
-black
 ipython
+ruff
