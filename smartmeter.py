@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import pathlib
+import sys
 from typing import Union
 
 import requests
@@ -112,11 +113,21 @@ class SmartMeter:
         response.raise_for_status()
         _logger.debug("Response for '%s' was: %s", url, json.dumps(response.json()))
 
+        consumption_per_day = response.json()
+        if isinstance(consumption_per_day, list):
+            if len(consumption_per_day) > 1:
+                _logger.error(
+                    "Consumption records for '%s' and '%s' returns more than one entry!",
+                    metering_point,
+                    day.isoformat(),
+                )
+                sys.exit(1)
+
         if not include_mean_profile:
-            return response.json()
+            return consumption_per_day[0]
 
         mean_profile = self._get_mean_profile_for_day(metering_point, day)
-        return response.json() | {"meanProfile": mean_profile}
+        return consumption_per_day[0] | {"meanProfile": mean_profile}
 
 
 def download_consumptions_for_meter(
