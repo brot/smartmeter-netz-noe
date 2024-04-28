@@ -34,6 +34,20 @@ ON CONFLICT(timestamp) DO NOTHING
 IGNORED_PATH = [".DS_Store"]
 
 
+def adapt_datetime_iso(val):
+    """Adapt datetime.datetime to timezone-naive ISO 8601 date."""
+    return val.isoformat()
+
+
+def convert_datetime(val):
+    """Convert ISO 8601 datetime to datetime.datetime object."""
+    return datetime.datetime.fromisoformat(val.decode())
+
+
+sqlite3.register_adapter(datetime.datetime, adapt_datetime_iso)
+sqlite3.register_converter("datetime", convert_datetime)
+
+
 def _check_database(con):
     try:
         con.execute("SELECT 1 FROM consumption_data WHERE false")
