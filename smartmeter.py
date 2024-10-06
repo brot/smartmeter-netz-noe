@@ -29,6 +29,10 @@ class SmartMeter:
         url = f"{BASE_URL}/Authentication/Login"
         response = self.session.post(url, json={"user": username, "pwd": password})
         response.raise_for_status()
+        # raise_for_status does not deal with 999 -> smartmeter wartungsarbeiten
+        if response.status_code == 999:
+            print("Smartmeter Platform dürfte wieder Wartungsarbeiten durchführen!")
+            sys.exit(1)
 
     def _extend_session_lifetime(self) -> None:
         url = f"{BASE_URL}/Authentication/ExtendSessionLifetime"
