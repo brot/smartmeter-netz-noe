@@ -125,7 +125,7 @@ idna==3.10 \
 ipython==9.1.0 \
     --hash=sha256:2df07257ec2f84a6b346b8d83100bcf8fa501c6e01ab75cd3799b0bb253b3d2a \
     --hash=sha256:a47e13a5e05e02f3b8e1e7a0f9db372199fe8c3763532fe7a1e0379e4e135f16
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 ipython-pygments-lexers==1.1.1 \
     --hash=sha256:09c0138009e56b6854f9535736f4171d855c8c08a563a0dcd8022f78355c7e81 \
     --hash=sha256:a9462224a505ade19a605f71f8fa63c2048833ce50abc86768a0d81d876dc81c
@@ -162,7 +162,7 @@ pydantic==2.11.3 \
     --hash=sha256:7471657138c16adad9322fe3070c0116dd6c3ad8d649300e3cbdfe91f4db4ec3 \
     --hash=sha256:a082753436a07f9ba1289c6ffa01cd93db3548776088aa917cc43b63f68fa60f
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   pydantic-settings
 pydantic-core==2.33.1 \
     --hash=sha256:0483847fa9ad5e3412265c1bd72aad35235512d9ce9d27d81a56d935ef489672 \
@@ -268,7 +268,7 @@ pydantic-core==2.33.1 \
 pydantic-settings==2.9.1 \
     --hash=sha256:59b4f431b1defb26fe620c71a7d3968a710d719f5f4cdbbdb7926edeb770f6ef \
     --hash=sha256:c509bf79d27563add44e8446233359004ed85066cd096d8b510f715e6ef5d268
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 pygments==2.19.1 \
     --hash=sha256:61c16d2a8576dc0649d9f39e089b5f02bcd27fba10d8fb4dcc28173f7a45151f \
     --hash=sha256:9ea1544ad55cecf4b8242fab6dd35a93bbce657034b0611ee383099054ab6d8c
@@ -279,10 +279,10 @@ python-dotenv==1.1.0 \
     --hash=sha256:41f90bc6f5f177fb41f53e87666db362025010eb28f60a01c9143bfa33a2b2d5 \
     --hash=sha256:d7c01d9e2293916c18baf562d95698754b0dbbb5e74d457c45d4f6561fb9d55d
     # via pydantic-settings
-requests==2.32.3 \
-    --hash=sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760 \
-    --hash=sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6
-    # via -r requirements/requirements.in
+requests==2.32.4 \
+    --hash=sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c \
+    --hash=sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422
+    # via -r requirements.in
 ruff==0.11.6 \
     --hash=sha256:01c63ba219514271cee955cd0adc26a4083df1956d57847978383b0e50ffd7d2 \
     --hash=sha256:15adac20ef2ca296dd3d8e2bedc6202ea6de81c091a74661c3666e5c4c223ff6 \
@@ -302,7 +302,7 @@ ruff==0.11.6 \
     --hash=sha256:d84dcbe74cf9356d1bdb4a78cf74fd47c740bf7bdeb7529068f69b08272239a1 \
     --hash=sha256:f2959049faeb5ba5e3b378709e9d1bf0cab06528b306b9dd6ebd2a312127964a \
     --hash=sha256:f55844e818206a9dd31ff27f91385afb538067e2dc0beb05f82c293ab84f7d55
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 stack-data==0.6.3 \
     --hash=sha256:836a778de4fec4dcd1dcd89ed8abff8a221f58308462e1c4aa2a3cf30148f0b9 \
     --hash=sha256:d5558e0c25a4cb0853cddad3d77da9891a08cb85dd9f9f91b9f8cd66e511e695
