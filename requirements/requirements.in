@@ -1,7 +1,0 @@
-pydantic
-pydantic_settings
-requests
-
-# development
-ipython
-ruff
