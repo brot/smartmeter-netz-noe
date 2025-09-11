@@ -4,6 +4,8 @@ import json
 import logging
 import pathlib
 import sys
+from enum import Enum
+from pydantic import BaseModel
 from typing import Union
 
 import requests
@@ -14,6 +16,17 @@ BASE_URL = "https://smartmeter.netz-noe.at/orchestration"
 
 _logger = logging.getLogger(__name__)
 _settings = settings.Settings()
+
+
+class Context(Enum):
+    CONSUMPTION_INFO = 2
+    DOWNLOAD_INFO = 5
+
+
+# These are only the needed fields of the consumption info response
+class ConsumptionInfo(BaseModel):
+    account_id: str
+    metering_point_id: str
 
 
 class SmartMeter:
@@ -39,36 +52,7 @@ class SmartMeter:
         response = self.session.get(url)
         response.raise_for_status()
 
-    def _get_account_ids(self) -> list[str]:
-        """
-        Retrieve account ids linked to the login.
-
-        :return: list of account ids
-        """
-        url = f"{BASE_URL}/User/GetAccountIdByBussinespartnerId"
-
-        response = self.session.get(url, params={"context": 2})
-        response.raise_for_status()
-        _logger.debug("Response for '%s' was: %s", url, json.dumps(response.json()))
-
-        return [account["accountId"] for account in response.json()]
-
-    def _get_meters(self, account_id: str) -> list[str]:
-        """
-        Retrieve metering points for the given account id.
-
-        :param account_id: account id
-        :return: list of metering points
-        """
-        url = f"{BASE_URL}/User/GetMeteringPointByAccountId"
-
-        response = self.session.get(url, params={"accountId": account_id, "context": 2})
-        response.raise_for_status()
-        _logger.debug("Response for '%s' was: %s", url, json.dumps(response.json()))
-
-        return [entry["meteringPointId"] for entry in response.json()]
-
-    def get_account_meters(self) -> dict[str, list[str]]:
+    def get_consumption_info(self) -> list[ConsumptionInfo]:
         """
         Retrieves all metering points and account-ids linked to the login.
 
@@ -76,10 +60,18 @@ class SmartMeter:
             key: account-id
             value: list of metering points for the account
         """
-        return {
-            account_id: self._get_meters(account_id)
-            for account_id in self._get_account_ids()
-        }
+        url = f"{BASE_URL}/User/GetMeteringPointsByBusinesspartnerId"
+        response = self.session.get(url, params={"context": Context.CONSUMPTION_INFO.value})
+        response.raise_for_status()
+        json_response = response.json()
+        _logger.debug("Response for '%s' was: %s", url, json.dumps(json_response))
+
+        return [
+            ConsumptionInfo(
+                account_id=consumption_info["accountId"], metering_point_id=consumption_info["meteringPointId"]
+            )
+            for consumption_info in json_response
+        ]
 
     def _get_mean_profile_for_day(
         self, metering_point: str, day: datetime.date
@@ -87,9 +79,7 @@ class SmartMeter:
         """Retrieve mean profile for the given day."""
         url = f"{BASE_URL}/ConsumptionRecord/MeanProfileDay"
 
-        response = self.session.get(
-            url, params={"meterId": metering_point, "day": day.isoformat()}
-        )
+        response = self.session.get(url, params={"meterId": metering_point, "day": day.isoformat()})
         response.raise_for_status()
         _logger.debug("Response for '%s' was: %s", url, json.dumps(response.json()))
 
@@ -111,9 +101,7 @@ class SmartMeter:
         """
         url = f"{BASE_URL}/ConsumptionRecord/Day"
 
-        response = self.session.get(
-            url, params={"meterId": metering_point, "day": day.isoformat()}
-        )
+        response = self.session.get(url, params={"meterId": metering_point, "day": day.isoformat()})
         response.raise_for_status()
         _logger.debug("Response for '%s' was: %s", url, json.dumps(response.json()))
 
@@ -144,10 +132,7 @@ def download_consumptions_for_meter(
     Download consumption records starting from start-date for given engery-meter.
     """
     number_since_measure_start = (datetime.date.today() - start_date).days
-    for day in [
-        start_date + datetime.timedelta(days=i)
-        for i in range(number_since_measure_start)
-    ]:
+    for day in [start_date + datetime.timedelta(days=i) for i in range(number_since_measure_start)]:
         json_file = storage_path / f"{day.isoformat()}.json"
         if json_file.exists():
             _logger.debug(
@@ -157,9 +142,7 @@ def download_consumptions_for_meter(
             )
             continue
 
-        consumption_records = smartmeter.get_consumption_records_for_day(
-            energy_meter, day
-        )
+        consumption_records = smartmeter.get_consumption_records_for_day(energy_meter, day)
         if not consumption_records["meteredValues"]:
             _logger.error(
                 "Consumption records for '%s' and '%s' missing data.",
@@ -173,20 +156,18 @@ def download_consumptions_for_meter(
 
 def main():
     smartmeter = SmartMeter(_settings.username, _settings.password)
-    acount_meters = smartmeter.get_account_meters()
-    for account_id, energy_meters in acount_meters.items():
-        account_dir = _settings.storage_path / account_id
+    for consumption_info in smartmeter.get_consumption_info():
+        account_dir = _settings.storage_path / consumption_info.account_id
         if not account_dir.exists():
             account_dir.mkdir()
 
-        for energy_meter in energy_meters:
-            energy_meter_dir = account_dir / energy_meter
-            if not energy_meter_dir.exists():
-                energy_meter_dir.mkdir()
+        energy_meter_dir = account_dir / consumption_info.metering_point_id
+        if not energy_meter_dir.exists():
+            energy_meter_dir.mkdir()
 
-            download_consumptions_for_meter(
-                smartmeter, energy_meter_dir, energy_meter, _settings.measure_start_date
-            )
+        download_consumptions_for_meter(
+            smartmeter, energy_meter_dir, consumption_info.metering_point_id, _settings.measure_start_date
+        )
 
 
 if __name__ == "__main__":
