@@ -1,7 +1,48 @@
+# byte-compiled / optimized / DLL files
 __pycache__/
-.direnv
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
 .env
-.ruff_cache/
-.venv
-.vscode
-*.pyc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project specific
+*.json
+
+# tests and coverage
+.coverage
+.mypy_cache
+.ruff_cache
+*.pytest_cache
+
+# database & logs
+*.db
+*.log
+*.sqlite3
+
+# other
+.direnv
+.DS_Store

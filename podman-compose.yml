@@ -1,0 +1,19 @@
+services:
+  vmsingle:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: smartmeter-victoriametrics
+    ports:
+      - "8428:8428" # HTTP API, PromQL, InfluxDB Line Protocol
+    volumes:
+      - vm-storage:/victoria-metrics-data
+    command:
+      - '--storageDataPath=/victoria-metrics-data'
+      - '--retentionPeriod=10y'
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8428/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  vm-storage:

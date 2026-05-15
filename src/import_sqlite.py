@@ -78,10 +78,7 @@ def import_data():
 
                 data = list(
                     zip(
-                        [
-                            datetime.datetime.fromisoformat(d)
-                            for d in json_data["peakDemandTimes"]
-                        ],
+                        [datetime.datetime.fromisoformat(d) for d in json_data["peakDemandTimes"]],
                         json_data["meteredValues"],
                         json_data["estimatedValues"],
                         json_data["meteredPeakDemands"],
