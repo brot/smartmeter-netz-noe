@@ -70,7 +70,15 @@ async def sync_filesystem_to_vm():
         for meter_dir in sorted(d for d in base_path.iterdir() if d.is_dir()):
             metering_point = meter_dir.name
             _logger.info("Processing metering point: %s", metering_point)
-            json_files = sorted(meter_dir.rglob("*.json"))
+
+            # Collect periodic consumption data from year-month subdirectories,
+            # skipping the manual readings folder and zip archives.
+            json_files = []
+            for sub_dir in meter_dir.iterdir():
+                if sub_dir.is_dir() and sub_dir.name != _settings.manual_readings_folder:
+                    json_files.extend(sub_dir.rglob("*.json"))
+
+            json_files.sort()
 
             tasks = [_process_single_file(f, vm_storage, metering_point) for f in json_files]
             results = await asyncio.gather(*tasks)

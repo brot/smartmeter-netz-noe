@@ -35,7 +35,7 @@ class ConsumptionDownloader:
                 _logger.error("VictoriaMetrics backend requested but could not be initialized: %s", e)
 
         if _settings.use_filesystem_backup:
-            self.backends.append(FilesystemStorage(_settings.storage_path))
+            self.backends.append(FilesystemStorage(_settings.storage_path, _settings.manual_readings_folder))
             _logger.info("Filesystem backup enabled")
 
         if not self.backends:

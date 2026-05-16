@@ -1,3 +1,4 @@
+import datetime
 import logging
 from datetime import date
 from typing import Optional
@@ -64,6 +65,26 @@ class VictoriaMetricsStorage(BaseStorage):
         # Existence checks would require querying the database, which is not implemented.
         # Deduplication is usually handled by VictoriaMetrics itself based on timestamp and labels.
         return False
+
+    async def save_manual_reading(
+        self,
+        metering_point: str,
+        reading_type: str,
+        source: str,
+        value: float,
+        timestamp: datetime.datetime,
+    ) -> None:
+        # VictoriaMetrics handles InfluxDB line protocol at /write
+        url = self.url.replace("/api/v1/write", "/write") if "/api/v1/write" in self.url else self.url
+
+        ts_ns = int(timestamp.timestamp() * 1_000_000_000)
+        line = (
+            f"manual_meter_reading,metering_point={metering_point},"
+            f"type={reading_type},source={source} value={value} {ts_ns}\n"
+        )
+
+        response = await self._client.post(url, content=line)
+        response.raise_for_status()
 
     async def close(self) -> None:
         await self._client.aclose()

@@ -37,6 +37,7 @@ src/
 ├── main.py                # Hauptskript für Download & Storage
 ├── archive.py             # Archivierungsskript
 ├── migrate.py             # Migration helper for old folder layouts
+   ├── record_reading.py      # Utility to record manual meter readings
 ├── sync.py                # Utility to backfill VictoriaMetrics from local files
 └── storage/
    ├── base.py            # Abstract BaseStorage Klasse
@@ -76,7 +77,19 @@ With debug logging:
 
 The script connects to the portal, fetches available metering points, downloads missing data, and stores it in the configured backends.
 
-### 4. Testing
+### 4. Manual Meter Readings
+Record manual readings (e.g., from an annual bill or intermediate check) to both configured backends:
+
+      uv run python -m src.record_reading --metering-point AT... --type annual_bill --source netz_noe --value 15420.5 --timestamp 2024-03-31T23:59:59
+
+Arguments:
+- `--metering-point`: Your metering point ID.
+- `--type`: `annual_bill` or `intermediate`.
+- `--source`: `netz_noe` or `me`.
+- `--value`: The meter reading value (Zählerstand).
+- `--timestamp`: Optional ISO 8601 timestamp. Defaults to current time.
+
+### 5. Testing
 To run the test suite, ensure development dependencies are installed and use `uv`:
 
       uv add --dev pytest  # If not already present
@@ -84,12 +97,12 @@ To run the test suite, ensure development dependencies are installed and use `uv
 
 Tests are located in the `tests/` directory at the project root.
 
-### 5. Syncing Data
+### 6. Syncing Data
 If you have local JSON files but VictoriaMetrics is empty, use the sync utility to backfill data without hitting the API:
 
       uv run python -m src.sync
 
-### 6. Archiving
+### 7. Archiving
 Archive all months except the current one:
 
       uv run python -m src.archive --all
@@ -110,9 +123,21 @@ If you have data from older versions in a flat folder structure, use the migrati
 ### VictoriaMetrics Backend
 Uses InfluxDB Line Protocol. Data is stored with labels for metering_point and day. Metrics include metered consumption, peak power, and self-coverage values.
 
+Manual readings are stored under the metric `manual_meter_reading` with labels for `type` and `source`.
+
 ### Filesystem Backend
 Structure: {STORAGE_PATH}/{meter}/{YYYY}/{MM}/{YYYY-MM-DD}.json
 Format: Indented JSON containing raw API response data for long-term backup and local processing.
 
 ### Query Examples (PromQL)
-Total consumption per day: sum by (day) (increase(consumption_metered[1d]))
+Total consumption per day:
+`sum by (day) (sum_over_time(consumption_metered[1d]))`
+
+Validate bill (Sum of 15m intervals vs. Manual Reading Delta):
+1. **Sum of 15m intervals:**
+   `sum(sum_over_time(consumption_metered[$__range]))`
+
+2. **Difference of Manual Readings:**
+   `last_over_time(manual_meter_reading_value[$__range]) - first_over_time(manual_meter_reading_value[$__range])`
+
+*Note: Ensure the Grafana Time Picker covers the dates of your manual readings.*

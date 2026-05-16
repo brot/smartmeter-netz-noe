@@ -26,5 +26,10 @@ class Settings(BaseSettings):
     # Feature flags
     use_victoriametrics: bool = Field(default=True, description="Enable VictoriaMetrics storage")
     use_filesystem_backup: bool = Field(default=True, description="Enable filesystem backup")
+    manual_readings_folder: str = Field(
+        default="manual_readings",
+        validation_alias="MANUAL_READINGS_FOLDER",
+        description="Folder name for manual readings",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")

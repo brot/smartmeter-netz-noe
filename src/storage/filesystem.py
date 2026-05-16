@@ -1,4 +1,6 @@
 import asyncio
+import datetime
+import json
 import pathlib
 from datetime import date
 from typing import Optional
@@ -11,8 +13,9 @@ _VIENNA_TZ = ZoneInfo("Europe/Vienna")
 
 
 class FilesystemStorage(BaseStorage):
-    def __init__(self, base_path: pathlib.Path):
+    def __init__(self, base_path: pathlib.Path, manual_readings_folder: str = "manual_readings"):
         self.base_path = base_path
+        self.manual_readings_folder = manual_readings_folder
 
     async def __aenter__(self):
         return self
@@ -51,3 +54,29 @@ class FilesystemStorage(BaseStorage):
     async def close(self) -> None:
         """FilesystemStorage does not have open connections to close."""
         pass
+
+    async def save_manual_reading(
+        self,
+        metering_point: str,
+        reading_type: str,
+        source: str,
+        value: float,
+        timestamp: datetime.datetime,
+    ) -> None:
+        reading_dir = self.base_path / metering_point / self.manual_readings_folder
+        await asyncio.to_thread(reading_dir.mkdir, parents=True, exist_ok=True)
+
+        # Use a filesystem-safe ISO format for the filename
+        file_timestamp = timestamp.strftime("%Y-%m-%dT%H-%M-%S")
+        file_path = reading_dir / f"{file_timestamp}.json"
+
+        reading_data = {
+            "metering_point": metering_point,
+            "timestamp": timestamp.isoformat(),
+            "type": reading_type,
+            "source": source,
+            "value": value,
+            "metric_name": "manual_meter_reading",
+        }
+
+        await asyncio.to_thread(file_path.write_text, json.dumps(reading_data, indent=2), encoding="utf-8")
