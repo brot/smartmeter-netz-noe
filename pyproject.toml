@@ -5,7 +5,7 @@ description = "Download meter data from smartmeter.netz-noe.at"
 requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.11.0",
-    "pydantic-settings>=2.8.1",
+    "pydantic-settings>=2.14.2",
     "requests>=2.32.3",
 ]
 
